@@ -1,0 +1,1254 @@
+openapi: "3.1.0"
+info:
+  title: K-12 School Management Platform API
+  version: "1.0.0"
+  description: |
+    Multi-tenant K-12 school management platform API.
+    
+    All endpoints (except /auth/*) require authentication via Bearer JWT token.
+    Every tenant-scoped request automatically filters data to the authenticated tenant.
+    
+    Base URL: https://api.schoolsaas.com/api/v1
+
+servers:
+  - url: https://api.schoolsaas.com/api/v1
+    description: Production
+  - url: https://staging-api.schoolsaas.com/api/v1
+    description: Staging
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              code:
+                type: string
+              message:
+                type: string
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            totalPages:
+              type: integer
+
+    UUID:
+      type: string
+      format: uuid
+
+    Tenant:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        code:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [draft, provisioning, active, suspended, cancelled]
+        timezone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    User:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        status:
+          type: string
+          enum: [pending_acceptance, active, suspended, disabled]
+
+    Student:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        tenantId:
+          $ref: '#/components/schemas/UUID'
+        studentNumber:
+          type: string
+        admissionNumber:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [inquiry, applicant, admitted, enrolled, active, transferred, withdrawn, graduated, deceased]
+        profile:
+          $ref: '#/components/schemas/StudentProfile'
+        createdAt:
+          type: string
+          format: date-time
+
+    StudentProfile:
+      type: object
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+        gender:
+          type: string
+          nullable: true
+        dateOfBirth:
+          type: string
+          format: date
+        nationality:
+          type: string
+          nullable: true
+        bloodGroup:
+          type: string
+          nullable: true
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        invoiceNo:
+          type: string
+        studentId:
+          $ref: '#/components/schemas/UUID'
+        periodStart:
+          type: string
+          format: date
+        periodEnd:
+          type: string
+          format: date
+        dueDate:
+          type: string
+          format: date
+        subtotal:
+          type: number
+          format: decimal
+        balanceDue:
+          type: number
+          format: decimal
+        state:
+          type: string
+          enum: [draft, issued, partially_paid, paid, overdue, cancelled, refunded_partial, refunded_full]
+        issuedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    AttendanceSession:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        academicYearId:
+          $ref: '#/components/schemas/UUID'
+        gradelevelId:
+          $ref: '#/components/schemas/UUID'
+        sectionId:
+          $ref: '#/components/schemas/UUID'
+        attendanceMode:
+          type: string
+          enum: [daily, period_wise]
+        attendanceDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [draft, submitted, locked, corrected_pending, corrected_approved, corrected_rejected]
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ─────────────────────────────────────────
+  # Authentication
+  # ─────────────────────────────────────────
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful — returns memberships for tenant selection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  memberships:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tenantId:
+                          type: string
+                        tenantName:
+                          type: string
+                        roles:
+                          type: array
+                          items:
+                            type: string
+        '401':
+          description: Invalid credentials
+
+  /auth/select-tenant:
+    post:
+      tags: [Authentication]
+      summary: Select a tenant and receive access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId]
+              properties:
+                tenantId:
+                  type: string
+      responses:
+        '200':
+          description: Access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  expiresIn:
+                    type: integer
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token using refresh token
+      security: []
+      responses:
+        '200':
+          description: New access token issued
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Revoke current session
+      responses:
+        '204':
+          description: Logged out
+
+  /auth/password-reset/request:
+    post:
+      tags: [Authentication]
+      summary: Request a password reset email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '204':
+          description: Reset email sent (if account exists)
+
+  /auth/password-reset/confirm:
+    post:
+      tags: [Authentication]
+      summary: Complete password reset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, newPassword]
+              properties:
+                token:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '204':
+          description: Password updated
+
+  # ─────────────────────────────────────────
+  # Platform (Super Admin)
+  # ─────────────────────────────────────────
+  /platform/tenants:
+    post:
+      tags: [Platform - Tenants]
+      summary: Create a new tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, name, timezone]
+              properties:
+                code:
+                  type: string
+                name:
+                  type: string
+                timezone:
+                  type: string
+      responses:
+        '201':
+          description: Tenant created
+    get:
+      tags: [Platform - Tenants]
+      summary: List all tenants
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of tenants
+
+  /platform/tenants/{tenantId}/suspend:
+    post:
+      tags: [Platform - Tenants]
+      summary: Suspend a tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Tenant suspended
+
+  /platform/tenants/{tenantId}/activate:
+    post:
+      tags: [Platform - Tenants]
+      summary: Activate a tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Tenant activated
+
+  # ─────────────────────────────────────────
+  # Users and Memberships
+  # ─────────────────────────────────────────
+  /users/invite:
+    post:
+      tags: [Users]
+      summary: Invite a user to the current tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, roleIds]
+              properties:
+                email:
+                  type: string
+                  format: email
+                roleIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Invitation sent
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List users in the current tenant
+      parameters:
+        - name: roleType
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of users
+
+  /users/{userId}/disable:
+    post:
+      tags: [Users]
+      summary: Disable a user's membership
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User disabled
+
+  # ─────────────────────────────────────────
+  # School Configuration
+  # ─────────────────────────────────────────
+  /schools/profile:
+    get:
+      tags: [School]
+      summary: Get school profile
+      responses:
+        '200':
+          description: School profile
+    post:
+      tags: [School]
+      summary: Create school profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Profile created
+    patch:
+      tags: [School]
+      summary: Update school profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Profile updated
+
+  /academic-years:
+    get:
+      tags: [Academic Structure]
+      summary: List academic years
+      responses:
+        '200':
+          description: List of academic years
+    post:
+      tags: [Academic Structure]
+      summary: Create academic year
+      responses:
+        '201':
+          description: Academic year created
+
+  /academic-years/{id}/activate:
+    post:
+      tags: [Academic Structure]
+      summary: Activate an academic year
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Academic year activated
+
+  /grade-levels:
+    get:
+      tags: [Academic Structure]
+      summary: List grade levels
+      responses:
+        '200':
+          description: List of grades
+    post:
+      tags: [Academic Structure]
+      summary: Create grade level
+      responses:
+        '201':
+          description: Grade created
+
+  /sections:
+    get:
+      tags: [Academic Structure]
+      summary: List sections
+      parameters:
+        - name: academicYearId
+          in: query
+          schema:
+            type: string
+        - name: gradeLevelId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of sections
+    post:
+      tags: [Academic Structure]
+      summary: Create section
+      responses:
+        '201':
+          description: Section created
+
+  # ─────────────────────────────────────────
+  # Students
+  # ─────────────────────────────────────────
+  /students:
+    get:
+      tags: [Students]
+      summary: List students
+      parameters:
+        - name: gradeLevelId
+          in: query
+          schema:
+            type: string
+        - name: sectionId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of students
+    post:
+      tags: [Students]
+      summary: Create a student profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Student created
+
+  /students/{id}:
+    get:
+      tags: [Students]
+      summary: Get student details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Student details
+    patch:
+      tags: [Students]
+      summary: Update student profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Student updated
+
+  /student-enrollments:
+    post:
+      tags: [Students]
+      summary: Enroll a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentId, academicYearId, gradeLevelId, sectionId, enrollmentDate]
+              properties:
+                studentId:
+                  type: string
+                academicYearId:
+                  type: string
+                gradeLevelId:
+                  type: string
+                sectionId:
+                  type: string
+                enrollmentDate:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Student enrolled
+
+  /student-enrollments/{id}/withdraw:
+    post:
+      tags: [Students]
+      summary: Withdraw a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+      responses:
+        '204':
+          description: Student withdrawn
+
+  # ─────────────────────────────────────────
+  # Attendance
+  # ─────────────────────────────────────────
+  /attendance/sessions:
+    get:
+      tags: [Attendance]
+      summary: List attendance sessions
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: sectionId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of sessions
+    post:
+      tags: [Attendance]
+      summary: Create an attendance session
+      responses:
+        '201':
+          description: Session created
+
+  /attendance/records/bulk:
+    post:
+      tags: [Attendance]
+      summary: Bulk submit attendance records
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId, records]
+              properties:
+                sessionId:
+                  type: string
+                records:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      studentId:
+                        type: string
+                      statusCode:
+                        type: string
+                      remarks:
+                        type: string
+      responses:
+        '200':
+          description: Records submitted
+
+  /attendance/sessions/{id}/submit:
+    post:
+      tags: [Attendance]
+      summary: Submit attendance session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Session submitted
+
+  /attendance/sessions/{id}/lock:
+    post:
+      tags: [Attendance]
+      summary: Lock attendance session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Session locked
+
+  /attendance/corrections:
+    post:
+      tags: [Attendance]
+      summary: Request an attendance correction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [attendanceRecordId, newStatusId, reason]
+              properties:
+                attendanceRecordId:
+                  type: string
+                newStatusId:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        '201':
+          description: Correction requested
+
+  # ─────────────────────────────────────────
+  # Fees
+  # ─────────────────────────────────────────
+  /fee-categories:
+    get:
+      tags: [Fees]
+      summary: List fee categories
+      responses:
+        '200':
+          description: List of fee categories
+    post:
+      tags: [Fees]
+      summary: Create a fee category
+      responses:
+        '201':
+          description: Category created
+
+  /fee-structures:
+    get:
+      tags: [Fees]
+      summary: List fee structures
+      responses:
+        '200':
+          description: List of fee structures
+    post:
+      tags: [Fees]
+      summary: Create a fee structure
+      responses:
+        '201':
+          description: Structure created
+
+  /invoices/generate:
+    post:
+      tags: [Fees]
+      summary: Bulk generate invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                academicYearId:
+                  type: string
+                gradeLevelId:
+                  type: string
+                billingPeriod:
+                  type: string
+      responses:
+        '202':
+          description: Invoice generation queued
+
+  /invoices:
+    get:
+      tags: [Fees]
+      summary: List invoices
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: dueDateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dueDateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of invoices
+
+  /invoices/{id}/issue:
+    post:
+      tags: [Fees]
+      summary: Issue a draft invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Invoice issued
+
+  /payments/offline:
+    post:
+      tags: [Fees]
+      summary: Record an offline payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentId, amount, paymentMethod, receivedAt]
+              properties:
+                studentId:
+                  type: string
+                invoiceId:
+                  type: string
+                amount:
+                  type: number
+                paymentMethod:
+                  type: string
+                  enum: [cash, cheque, bank_transfer, pos]
+                referenceNo:
+                  type: string
+                receivedAt:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Payment recorded
+
+  /payments/online/session:
+    post:
+      tags: [Fees]
+      summary: Create an online payment session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentId, invoiceId, amount]
+              properties:
+                studentId:
+                  type: string
+                invoiceId:
+                  type: string
+                amount:
+                  type: number
+                idempotencyKey:
+                  type: string
+      responses:
+        '201':
+          description: Payment session created with gateway URL
+
+  /refunds:
+    post:
+      tags: [Fees]
+      summary: Initiate a refund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentTransactionId, amount, reason, refundMode]
+              properties:
+                paymentTransactionId:
+                  type: string
+                amount:
+                  type: number
+                reason:
+                  type: string
+                refundMode:
+                  type: string
+                  enum: [original_method, bank_transfer, cash, cheque, credit_balance]
+      responses:
+        '201':
+          description: Refund initiated
+
+  /reports/fees/defaulters:
+    get:
+      tags: [Fees - Reports]
+      summary: Get defaulters list
+      parameters:
+        - name: gradeLevelId
+          in: query
+          schema:
+            type: string
+        - name: sectionId
+          in: query
+          schema:
+            type: string
+        - name: agingBucket
+          in: query
+          schema:
+            type: string
+            enum: [current, 1_30, 31_60, 61_90, 90_plus]
+      responses:
+        '200':
+          description: Defaulters list
+
+  # ─────────────────────────────────────────
+  # Gradebook
+  # ─────────────────────────────────────────
+  /assessments:
+    get:
+      tags: [Gradebook]
+      summary: List assessments
+      responses:
+        '200':
+          description: List of assessments
+    post:
+      tags: [Gradebook]
+      summary: Create an assessment
+      responses:
+        '201':
+          description: Assessment created
+
+  /marks-entries/bulk:
+    post:
+      tags: [Gradebook]
+      summary: Bulk enter marks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [assessmentId, entries]
+              properties:
+                assessmentId:
+                  type: string
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      studentId:
+                        type: string
+                      componentId:
+                        type: string
+                      rawMarks:
+                        type: number
+                      markState:
+                        type: string
+      responses:
+        '200':
+          description: Marks saved
+
+  /report-cards/generate:
+    post:
+      tags: [Gradebook]
+      summary: Generate report cards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resultPublicationId:
+                  type: string
+      responses:
+        '202':
+          description: Report card generation queued
+
+  /result-publications/{id}/publish:
+    post:
+      tags: [Gradebook]
+      summary: Publish results
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Results published
+
+  # ─────────────────────────────────────────
+  # Parent/Student Portal
+  # ─────────────────────────────────────────
+  /portal/auth/login:
+    post:
+      tags: [Portal]
+      summary: Portal login for parents and students
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Portal login successful
+
+  /portal/dashboard:
+    get:
+      tags: [Portal]
+      summary: Get portal dashboard summary
+      responses:
+        '200':
+          description: Dashboard summary
+
+  /portal/attendance/summary:
+    get:
+      tags: [Portal]
+      summary: Get attendance summary for selected child or self
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Attendance summary
+
+  /portal/fees/summary:
+    get:
+      tags: [Portal]
+      summary: Get fee balance and upcoming dues
+      responses:
+        '200':
+          description: Fee summary
+
+  /portal/invoices:
+    get:
+      tags: [Portal]
+      summary: List invoices visible to parent/student
+      responses:
+        '200':
+          description: Invoice list
+
+  /portal/report-cards:
+    get:
+      tags: [Portal]
+      summary: List published report cards
+      responses:
+        '200':
+          description: Report cards list
+
+  /portal/timetable:
+    get:
+      tags: [Portal]
+      summary: Get published timetable for child/self
+      responses:
+        '200':
+          description: Timetable
+
+  /portal/notices:
+    get:
+      tags: [Portal]
+      summary: List notices visible to current portal user
+      responses:
+        '200':
+          description: Notices list
+
+  /portal/support-requests:
+    post:
+      tags: [Portal]
+      summary: Submit a support request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, description]
+              properties:
+                subject:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Support request created
+
+  # ─────────────────────────────────────────
+  # Communication
+  # ─────────────────────────────────────────
+  /communications/notices:
+    post:
+      tags: [Communication]
+      summary: Create a notice
+      responses:
+        '201':
+          description: Notice created
+    get:
+      tags: [Communication]
+      summary: List notices
+      responses:
+        '200':
+          description: Notices list
+
+  /communications/notices/{id}/send:
+    post:
+      tags: [Communication]
+      summary: Send a notice immediately
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Notice queued for delivery
+
+  /communications/templates:
+    get:
+      tags: [Communication]
+      summary: List message templates
+      responses:
+        '200':
+          description: Templates list
+    post:
+      tags: [Communication]
+      summary: Create a message template
+      responses:
+        '201':
+          description: Template created
+
+tags:
+  - name: Authentication
+  - name: Platform - Tenants
+  - name: Users
+  - name: School
+  - name: Academic Structure
+  - name: Students
+  - name: Attendance
+  - name: Fees
+  - name: Fees - Reports
+  - name: Gradebook
+  - name: Portal
+  - name: Communication

@@ -1,0 +1,1094 @@
+# Module 7.14 Transport Management
+
+The Transport Management module manages school transport operations including vehicles, routes, stops, driver assignments, student transport assignments, and transport-related fee tracking. It supports daily operational planning, improves parent visibility into assigned transport details, and helps schools manage a common K-12 operational requirement in a structured and auditable way.
+
+The module enables schools to:
+- Maintain vehicle and driver records
+- Define routes and stops
+- Sequence stops per route
+- Assign students to transport routes and stops
+- Track active and historical transport assignments
+- Monitor transport capacity and route usage
+- Record transport-related payment obligations where finance integration is enabled
+
+The module must integrate with student records, parent relationships, fees, and attendance-related operational reporting. It must not create independent student identity records outside the platform’s SIS and RBAC foundations. 
+
+***
+
+## 1. Module Objective
+
+Schools frequently manage buses, routes, stops, and student pickup allocations through paper registers, spreadsheets, and informal coordinator workflows. Without a structured transport workflow:
+- Route assignments become error-prone
+- Vehicle capacity is hard to control
+- Student pickup and drop tracking becomes unreliable
+- Parent visibility is poor
+- Transport fees are inconsistently linked to student assignments
+- Historical route and assignment changes are difficult to audit
+
+Schools need this module to:
+- Centralize transport setup and assignments
+- Reduce manual route administration
+- Improve parent transparency into pickup and drop details
+- Track route usage and capacity
+- Connect transport operations with fee and student data
+- Preserve assignment history for operational and dispute resolution purposes
+
+***
+
+## 2. Why Schools Need It
+
+### 2.1 Transport Is a Common K-12 Requirement
+Many schools operate buses or vans and need structured transport records to manage daily student movement.
+
+### 2.2 Improve Student Safety and Operational Clarity
+Schools need clear route, stop, vehicle, and driver assignments so transport operations are predictable and auditable.
+
+### 2.3 Reduce Administrative Work
+Transport coordinators and admins should not need to manually maintain route maps, stop lists, and student allocations across multiple spreadsheets.
+
+### 2.4 Improve Parent Transparency
+Parents need visibility into assigned route, stop, pickup point, and relevant transport changes for their linked children, using the same relationship-based access model as the rest of the platform. 
+
+### 2.5 Connect Operations and Finance
+Where transport is fee-bearing, student transport assignments should connect to finance workflows rather than existing as disconnected operational records.
+
+### 2.6 Support Measurable Daily Operations
+Principals and School Admins need route utilization, vehicle capacity, stop count, and transport assignment metrics to make daily operations measurable.
+
+***
+
+## 3. Primary Users
+
+### 3.1 School Admin
+Primary operational owner. Responsibilities:
+- Configure vehicles, routes, stops, and driver records
+- Assign students to routes and stops
+- Review route utilization and operational issues
+- Manage transport policy settings
+
+### 3.2 Principal
+Oversight user. Responsibilities:
+- View route performance and operational summaries
+- Monitor transport coverage and capacity usage
+- Review transport-related issues at school level
+
+### 3.3 Parent
+Visibility user. Responsibilities:
+- View assigned route and stop for linked children
+- Track transport assignment changes where allowed
+- View transport fee obligations if exposed through parent portal
+
+### 3.4 Student
+Limited visibility user. Responsibilities:
+- View assigned route and stop details where student portal access is enabled
+
+### 3.5 Super Admin
+Platform oversight user. Responsibilities:
+- Audit transport configuration and assignments
+- Support tenant troubleshooting
+
+### 3.6 Teacher
+No primary transport administration role in MVP. Responsibilities:
+- View student transport details only if explicitly allowed for safety or dismissal workflows
+
+### 3.7 Accountant
+Finance-related user. Responsibilities:
+- View transport-linked payment obligations where finance integration is enabled
+- No route operations permissions in normal workflow
+
+***
+
+## 4. User Stories
+
+### 4.1 User Stories - Vehicle Management
+- **US-001** As a School Admin, I want to create vehicle records, so transport capacity and usage can be managed.
+- **US-002** As a School Admin, I want to record vehicle identifiers and capacity, so route planning is accurate.
+- **US-003** As a Principal, I want to view active vehicles, so transport readiness is visible.
+
+### 4.2 User Stories - Route and Stop Management
+- **US-004** As a School Admin, I want to create routes, so the school can organize pickup and drop coverage.
+- **US-005** As a School Admin, I want to define stops under each route, so student pickup points are standardized.
+- **US-006** As a School Admin, I want route stops sequenced, so route order is operationally clear.
+- **US-007** As a School Admin, I want to assign a driver to a route or vehicle, so accountability is clear.
+
+### 4.3 User Stories - Student Assignment
+- **US-008** As a School Admin, I want to assign students to routes and stops, so transport allocation is managed centrally.
+- **US-009** As a School Admin, I want assignment history preserved, so route changes remain auditable.
+- **US-010** As a Parent, I want to view my child’s assigned route and stop, so I know transport arrangements.
+- **US-011** As a Student, I want to see my assigned transport details, so I know where I am allocated.
+
+### 4.4 User Stories - Capacity and Operations
+- **US-012** As a School Admin, I want capacity validation, so a route or vehicle is not over-assigned.
+- **US-013** As a Principal, I want route utilization metrics, so I can identify underused or overloaded transport operations.
+- **US-014** As a School Admin, I want to deactivate routes or stops safely, so invalid assignments are prevented.
+
+### 4.5 User Stories - Finance Integration
+- **US-015** As an Accountant, I want transport payment obligations linked to active transport assignments, so fee collection stays accurate.
+- **US-016** As a School Admin, I want transport assignment changes to update finance eligibility rules, so charges reflect actual usage.
+- **US-017** As a Parent, I want visibility into transport-related charges where enabled, so billed services match assigned transport usage.
+
+### 4.6 User Stories - Reporting and Audit
+- **US-018** As a School Admin, I want route reports, so I can manage stop counts, student counts, and vehicle allocation.
+- **US-019** As a Principal, I want transport dashboards, so daily school operations become measurable.
+- **US-020** As a Super Admin, I want transport audit logs, so support and accountability are possible.
+
+***
+
+## 5. Business Rules
+
+### 5.1 Business Rules - Tenant Isolation
+- **BR-001** Every vehicle, route, stop, driver, student transport assignment, and transport payment record must belong to exactly one tenant.
+- **BR-002** Transport records cannot be accessed across tenants.
+- **BR-003** All transport APIs and queries must automatically enforce tenant scope.
+
+### 5.2 Business Rules - Vehicle Rules
+- **BR-004** Vehicles must be uniquely identifiable within the tenant.
+- **BR-005** Vehicle capacity must be configurable.
+- **BR-006** Inactive vehicles cannot receive new route allocations.
+- **BR-007** Historical vehicle usage must remain visible for past assignments.
+
+### 5.3 Business Rules - Route and Stop Rules
+- **BR-008** Routes must belong to a single tenant and school context.
+- **BR-009** Stops must be reusable across routes only if school policy allows. Default behavior should treat stop-route ordering as route-specific through route stop mapping.
+- **BR-010** Route stops must preserve ordered sequence.
+- **BR-011** Inactive routes cannot receive new student assignments.
+- **BR-012** Inactive stops cannot receive new student assignments.
+- **BR-013** Route changes must be auditable.
+
+### 5.4 Business Rules - Driver Rules
+- **BR-014** Drivers must be recorded before vehicle or route assignment where driver tracking is enabled.
+- **BR-015** A driver cannot be assigned to overlapping active route contexts if school policy tracks exclusive route ownership.
+- **BR-016** Driver records must support active and inactive status without deleting historical references.
+
+### 5.5 Business Rules - Student Assignment Rules
+- **BR-017** Student transport assignments must reference an active student record from SIS. 
+- **BR-018** Only active enrolled students may receive active transport assignments unless school policy explicitly allows future assignments. 
+- **BR-019** A student may have only one active transport assignment per assignment type by default.
+- **BR-020** Assignment history must never be deleted.
+- **BR-021** Assignment changes must preserve effective start and end dates.
+- **BR-022** Student transport assignment cannot reference inactive route or stop records.
+- **BR-023** Parent visibility must follow parent-student relationship rules. 
+
+### 5.6 Business Rules - Capacity and Validation Rules
+- **BR-024** Vehicle and route capacity limits must be enforced before assignment confirmation.
+- **BR-025** Over-capacity assignment attempts must be blocked or require authorized override based on school policy.
+- **BR-026** Route utilization counts must use active assignment records.
+- **BR-027** Student removal from transport must update capacity availability immediately.
+
+### 5.7 Business Rules - Transport Payment Rules
+- **BR-028** Transport payments, where enabled, must be linked to active student transport assignments.
+- **BR-029** Transport assignment changes must not retroactively alter settled finance records.
+- **BR-030** Finance integration should create forward-looking billing eligibility changes rather than rewriting historical payment records.
+- **BR-031** Transport payment visibility for parents must follow finance and parent portal policy.
+
+### 5.8 Business Rules - Audit and Reporting Rules
+- **BR-032** Every create, edit, activate, deactivate, assign, unassign, and override action must be auditable.
+- **BR-033** Transport reports must support filtering by route, stop, vehicle, student, and status.
+- **BR-034** Historical transport assignments must remain searchable for operational review and dispute handling.
+
+***
+
+## 6. State Machine
+
+### 6.1 State Machine - Vehicle Lifecycle
+```text
+Draft
+  v
+Active
+  |------ Inactive
+  |         v
+  |------ Reactivated
+  v
+Archived
+```
+
+### 6.2 State Machine - Route Lifecycle
+```text
+Draft
+  v
+Active
+  |------ Inactive
+  |         v
+  |------ Reactivated
+  v
+Archived
+```
+
+### 6.3 State Machine - Student Transport Assignment Lifecycle
+```text
+Draft
+  v
+Active
+  |------ Suspended
+  |         v
+  |------ Reactivated
+  |------ Ended
+  v
+Archived
+```
+
+### 6.4 State Machine - Transport Payment Lifecycle
+```text
+Pending
+  v
+Due
+  |------ Paid
+  |------ Overdue
+  |------ Waived
+  v
+Closed
+```
+
+***
+
+## 7. Required Data Entities
+
+### 7.1 Required Data Entities - vehicles
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+schoolid | UUID
+vehiclecode | VARCHAR
+vehiclenumber | VARCHAR
+vehicletype | ENUM
+capacity | INTEGER
+status | ENUM
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.2 Required Data Entities - routes
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+schoolid | UUID
+routename | VARCHAR
+routecode | VARCHAR
+vehicleid | UUID NULL
+driverid | UUID NULL
+capacitylimit | INTEGER NULL
+status | ENUM
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.3 Required Data Entities - stops
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+schoolid | UUID
+stopname | VARCHAR
+stopcode | VARCHAR
+address | TEXT NULL
+latitude | DECIMAL NULL
+longitude | DECIMAL NULL
+status | ENUM
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.4 Required Data Entities - route_stops
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+routeid | UUID
+stopid | UUID
+sequenceno | INTEGER
+pickupeta | TIME NULL
+dropeta | TIME NULL
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.5 Required Data Entities - student_transport_assignments
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+studentid | UUID
+routeid | UUID
+stopid | UUID
+assignmenttype | ENUM
+effectivefrom | DATE
+effectiveto | DATE NULL
+status | ENUM
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.6 Required Data Entities - drivers
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+schoolid | UUID
+drivername | VARCHAR
+mobile | VARCHAR NULL
+licensecode | VARCHAR NULL
+status | ENUM
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.7 Required Data Entities - transport_payments
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+studentid | UUID
+studenttransportassignmentid | UUID
+feeperiod | VARCHAR
+amount | DECIMAL
+status | ENUM
+duedate | DATE
+paidat | TIMESTAMP NULL
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.8 Additional Supporting Entities
+- `vehicle_route_history`
+- `transport_assignment_events`
+- `transport_capacity_overrides`
+- `transport_audit_logs`
+
+***
+
+## 8. Permissions Matrix
+
+| Capability | Super Admin | School Admin | Principal | Teacher | Accountant | Parent | Student |
+|---|---|---|---|---|---|---|---|
+| View transport dashboard | Yes | Yes | Yes | Limited if enabled | No | No | No |
+| Create vehicles | Limited Support | Yes | Yes if allowed | No | No | No | No |
+| Create routes and stops | Limited Support | Yes | Yes if allowed | No | No | No | No |
+| Assign drivers | Limited Support | Yes | Yes if allowed | No | No | No | No |
+| Assign students to transport | No | Yes | Yes if allowed | No | No | No | No |
+| View student transport assignment | Limited Audit | Yes | Yes | Limited assigned safety view if enabled | Limited finance-linked view | Child only | Self only |
+| View transport payments | Limited Audit | Yes | Yes summary only | No | Yes | Child only if enabled | Self only if enabled |
+| Edit active assignments | No | Yes | Yes if allowed | No | No | No | No |
+| Deactivate route or vehicle | No | Yes | Yes if allowed | No | No | No | No |
+| View audit history | Limited Audit | Yes | Limited | No | No | No | No |
+
+***
+
+## 9. APIs Needed
+
+### 9.1 APIs Needed - Vehicle APIs
+- `POST /transport/vehicles`
+- `GET /transport/vehicles`
+- `GET /transport/vehicles/{id}`
+- `PATCH /transport/vehicles/{id}`
+- `POST /transport/vehicles/{id}/activate`
+- `POST /transport/vehicles/{id}/deactivate`
+
+### 9.2 APIs Needed - Route APIs
+- `POST /transport/routes`
+- `GET /transport/routes`
+- `GET /transport/routes/{id}`
+- `PATCH /transport/routes/{id}`
+- `POST /transport/routes/{id}/activate`
+- `POST /transport/routes/{id}/deactivate`
+
+### 9.3 APIs Needed - Stop APIs
+- `POST /transport/stops`
+- `GET /transport/stops`
+- `GET /transport/stops/{id}`
+- `PATCH /transport/stops/{id}`
+
+### 9.4 APIs Needed - Route Stop APIs
+- `POST /transport/routes/{id}/stops`
+- `PATCH /transport/routes/{id}/stops/{routeStopId}`
+- `DELETE /transport/routes/{id}/stops/{routeStopId}`
+- `GET /transport/routes/{id}/stops`
+
+### 9.5 APIs Needed - Driver APIs
+- `POST /transport/drivers`
+- `GET /transport/drivers`
+- `GET /transport/drivers/{id}`
+- `PATCH /transport/drivers/{id}`
+
+### 9.6 APIs Needed - Student Assignment APIs
+- `POST /transport/assignments`
+- `GET /transport/assignments`
+- `GET /transport/assignments/{id}`
+- `PATCH /transport/assignments/{id}`
+- `POST /transport/assignments/{id}/end`
+- `POST /transport/assignments/{id}/reactivate`
+
+### 9.7 APIs Needed - Payment APIs
+- `GET /transport/payments`
+- `GET /transport/payments/{id}`
+- `POST /transport/payments/{id}/mark-due`
+- `POST /transport/payments/{id}/mark-paid`
+
+### 9.8 APIs Needed - Parent and Student View APIs
+- `GET /parent/child/{studentId}/transport`
+- `GET /student/my-transport`
+
+### 9.9 APIs Needed - Reporting APIs
+- `GET /transport/reports/route-utilization`
+- `GET /transport/reports/capacity`
+- `GET /transport/reports/student-assignments`
+- `GET /transport/search`
+
+***
+
+## 10. Screens Needed
+
+### 10.1 Screens Needed - Transport Dashboard
+Displays:
+- Active vehicles
+- Active routes
+- Route utilization
+- Capacity warnings
+- Student assignment counts
+- Payment summary if enabled
+
+### 10.2 Screens Needed - Vehicle Management Screen
+Features:
+- Create vehicle
+- Edit vehicle details
+- Capacity management
+- Activate and deactivate vehicle
+
+### 10.3 Screens Needed - Route Management Screen
+Features:
+- Create route
+- Attach vehicle
+- Assign driver
+- View assigned students
+- Activate and deactivate route
+
+### 10.4 Screens Needed - Stop Management Screen
+Features:
+- Create stops
+- Edit stop details
+- Route-stop sequence management
+- ETA management if enabled
+
+### 10.5 Screens Needed - Student Transport Assignment Screen
+Features:
+- Search student
+- Assign route and stop
+- View active assignment
+- End assignment
+- View assignment history
+
+### 10.6 Screens Needed - Transport Payment Screen
+Displays:
+- Student transport charges
+- Payment status
+- Fee period
+- Due and paid states
+
+### 10.7 Screens Needed - Parent Transport View
+Displays:
+- Child route
+- Stop details
+- Vehicle details where allowed
+- Transport payment details where enabled
+
+### 10.8 Screens Needed - Transport Reports Screen
+Displays:
+- Route utilization
+- Over-capacity routes
+- Stop counts
+- Active assignments
+- Payment summaries
+
+***
+
+## 11. Edge Cases
+
+- **EC-001** Student is assigned to a route that has reached capacity. System blocks assignment or requires override.
+- **EC-002** Route is deactivated while students still have active assignments. New assignments are blocked and existing active records require review workflow.
+- **EC-003** Vehicle is changed after route assignments exist. Historical route-vehicle associations remain preserved.
+- **EC-004** Student withdraws from school while transport assignment is active. Assignment must end according to student status policy. 
+- **EC-005** Parent linked after transport assignment creation. Child transport details become visible through relationship-based access once link is active. 
+- **EC-006** Stop is removed from route while students are assigned there. Removal is blocked until reassignment or assignment closure.
+- **EC-007** Driver becomes inactive while assigned to active route. Route flagged for operational review.
+- **EC-008** Transport payment exists for a prior period after assignment ends. Historical finance record remains unchanged.
+- **EC-009** Student changes stop within same route. Previous assignment history remains preserved with effective dates.
+- **EC-010** Same student is assigned twice to active transport for same assignment type. Duplicate active assignment blocked.
+
+***
+
+## 12. Risks
+
+### 12.1 Risks - Operational Risk
+Incorrect route and stop assignments create daily transport confusion.  
+Mitigation: Strong validation, searchable assignment screen, history preservation.
+
+### 12.2 Risks - Capacity Risk
+Vehicles or routes are over-assigned.  
+Mitigation: Capacity enforcement, warnings, controlled override logging.
+
+### 12.3 Risks - Privacy Risk
+Parents access unrelated student transport details.  
+Mitigation: Relationship-based filtering, strict tenant isolation, audited portal access. 
+
+### 12.4 Risks - Finance Integrity Risk
+Transport charges become disconnected from actual active assignments.  
+Mitigation: Effective-dated assignments, forward-only billing updates, finance integration controls.
+
+### 12.5 Risks - Compliance and Audit Risk
+Historical route assignment disputes cannot be resolved later.  
+Mitigation: Immutable event history, assignment effective dates, audit logs.
+
+### 12.6 Risks - Scalability Risk
+Large schools with many routes and students experience slow allocation workflows.  
+Mitigation: Indexed route and student queries, pagination, optimized assignment views.
+
+***
+
+## 13. Success Metrics
+
+### 13.1 Success Metrics - Product Metrics
+- Vehicle creation success rate 99
+- Route assignment success rate 98
+- Student transport assignment success rate 98
+- Transport dashboard load time 2 seconds
+- Parent transport view load time 2 seconds
+
+### 13.2 Success Metrics - Operational Metrics
+- Route utilization visibility available for 100 of active routes
+- Over-capacity assignment incidents reduced to near zero
+- Student route assignment completion within 1 minute
+- Transport assignment update turnaround under 2 minutes
+
+### 13.3 Success Metrics - Parent Transparency Metrics
+- Parent transport detail access rate above 70 where enabled
+- Parent-reported transport information disputes reduced significantly
+- Accurate linked-child transport visibility across active parent accounts
+
+### 13.4 Success Metrics - Data Quality Metrics
+- Duplicate active transport assignments 0
+- Route-stop sequence integrity 100
+- Active assignment records with invalid route references 0
+
+### 13.5 Success Metrics - Business Metrics
+- Reduction in manual transport administration workload 60
+- Improved operational measurability for school transport workflows
+- Better transport-to-fee alignment where transport is billed
+
+***
+
+## 14. Out of Scope
+
+The following are excluded from the Transport Management module MVP:
+- Real-time GPS tracking
+- Live vehicle location sharing
+- Driver attendance workflows
+- Fuel management
+- Vehicle maintenance scheduling
+- Route optimization engine
+- RFID or smart card boarding systems
+- Attendance-on-boarding integration
+- Emergency dispatch workflows
+- Public map navigation integration
+- Staff transport management
+- Multi-leg transport planning
+- Advanced daily trip execution monitoring
+
+# Module 7.15 Library
+
+The Library module manages book cataloging, copy-level inventory, book issue and return workflows, and fine tracking. It is an expansion feature that supports basic school library circulation without introducing the full complexity of advanced library management platforms.
+
+The module enables schools to:
+- Maintain a catalog of books
+- Track individual book copies
+- Issue books to students
+- Record returns
+- Calculate and track fines
+- Provide circulation history and basic overdue visibility
+
+The module must integrate with student records, RBAC, and parent visibility rules where applicable. It must not introduce separate user identity or student relationship models outside the platform foundation. 
+
+***
+
+## 1. Module Objective
+
+Schools need a simple but reliable way to manage library circulation. Without a library workflow:
+- Book inventory becomes unreliable
+- Schools cannot track who borrowed which copy
+- Return dates are missed
+- Overdue fines are manually tracked
+- Loss and damage handling becomes inconsistent
+- Reporting on library usage becomes difficult
+
+Schools need this module to:
+- Track books and copies accurately
+- Support issue and return workflows
+- Record overdue and fine status
+- Improve accountability for borrowed items
+- Reduce manual library administration
+- Preserve circulation history
+
+***
+
+## 2. Why Schools Need It
+
+### 2.1 Support Book Circulation
+A library system is needed to track lending and returns in an organized way.
+
+### 2.2 Reduce Manual Recordkeeping
+Schools should not depend on paper ledgers or spreadsheets to track book movements.
+
+### 2.3 Improve Accountability
+Each issued copy should be traceable to a borrower and return state.
+
+### 2.4 Track Overdues and Fines
+Schools need a structured way to identify overdue books and apply fine rules where enabled.
+
+### 2.5 Improve Student Service
+Students need a faster issue and return workflow with clear due dates and history.
+
+### 2.6 Expand Platform Value
+Library is an expansion feature that increases product coverage for schools that want broader operational digitization.
+
+***
+
+## 3. Primary Users
+
+### 3.1 School Admin
+Administrative oversight user. Responsibilities:
+- View library setup and reports
+- Configure policy settings if librarian role is not separate in MVP
+
+### 3.2 Principal
+Oversight user. Responsibilities:
+- View circulation summaries
+- Monitor overdue trends and usage
+
+### 3.3 Teacher
+Limited library user. Responsibilities:
+- View own issued books if teacher borrowing is enabled later
+- No circulation operations permissions in student-focused MVP by default
+
+### 3.4 Student
+Primary borrower user. Responsibilities:
+- View issued books
+- View due dates
+- View fine status where enabled
+
+### 3.5 Parent
+Visibility user. Responsibilities:
+- View linked child library records where policy allows
+
+### 3.6 Super Admin
+Platform oversight user. Responsibilities:
+- Audit library usage and investigate support issues
+
+### 3.7 Accountant
+Finance visibility user for fines where integrated. Responsibilities:
+- View fine summaries if finance integration is enabled
+
+***
+
+## 4. User Stories
+
+### 4.1 User Stories - Catalog Management
+- **US-001** As a School Admin, I want to create book records, so the library catalog is digitized.
+- **US-002** As a School Admin, I want to track individual book copies, so circulation can happen at copy level.
+- **US-003** As a Principal, I want to view catalog size and availability, so library coverage is visible.
+
+### 4.2 User Stories - Issue and Return
+- **US-004** As a School Admin, I want to issue a book copy to a student, so borrowing is recorded.
+- **US-005** As a School Admin, I want to record book returns, so inventory status updates correctly.
+- **US-006** As a Student, I want to view my issued books and due dates, so I know what to return.
+- **US-007** As a Parent, I want to view my child’s issued books, so I can support timely returns.
+
+### 4.3 User Stories - Fine Tracking
+- **US-008** As a School Admin, I want overdue books flagged, so follow-up is easier.
+- **US-009** As a School Admin, I want fines calculated on overdue returns, so policy is enforced consistently.
+- **US-010** As an Accountant, I want fine visibility where finance integration is enabled, so charges can be monitored.
+
+### 4.4 User Stories - Reporting and Audit
+- **US-011** As a Principal, I want library circulation reports, so usage trends are measurable.
+- **US-012** As a School Admin, I want overdue and fine reports, so action can be taken quickly.
+- **US-013** As a Super Admin, I want audit visibility into issue and return operations, so support is manageable.
+
+***
+
+## 5. Business Rules
+
+### 5.1 Business Rules - Tenant Isolation
+- **BR-001** Every book, book copy, issue, return, and fine record must belong to exactly one tenant.
+- **BR-002** Library records cannot be accessed across tenants.
+- **BR-003** All library APIs and queries must automatically enforce tenant scope.
+
+### 5.2 Book and Copy Rules
+- **BR-004** Books represent catalog records.
+- **BR-005** Book copies represent physical lendable instances.
+- **BR-006** Each book copy must be uniquely identifiable within the tenant.
+- **BR-007** Copy status must support availability tracking.
+- **BR-008** Inactive or lost copies cannot be issued.
+
+### 5.3 Issue and Return Rules
+- **BR-009** Issues must reference a valid borrower record from the platform.
+- **BR-010** Only active students may receive new issues in student-focused MVP unless later expanded to staff borrowing. 
+- **BR-011** A book copy can have only one active issue at a time.
+- **BR-012** Issue records must include issue date and due date.
+- **BR-013** Returns must reference an existing active issue.
+- **BR-014** A returned copy becomes available unless marked damaged, lost, or under review.
+- **BR-015** Historical issue and return records must never be deleted.
+
+### 5.4 Fine Rules
+- **BR-016** Fines are optional and policy-driven.
+- **BR-017** Fine calculation must be based on configured overdue rules where enabled.
+- **BR-018** Fines may be waived only by authorized staff.
+- **BR-019** Fine changes must be auditable.
+- **BR-020** Fine settlement must not retroactively change original issue and return dates.
+
+### 5.5 Parent and Student Visibility Rules
+- **BR-021** Students may view only their own issue history.
+- **BR-022** Parents may view only linked child library records where enabled. 
+- **BR-023** Draft or internal audit notes must not be visible to parents or students.
+
+### 5.6 Audit and Reporting Rules
+- **BR-024** Every create, issue, return, fine, waive, and status-change action must be auditable.
+- **BR-025** Overdue reporting must use current date against active issue due date.
+- **BR-026** Historical circulation metrics must remain searchable and reportable.
+
+***
+
+## 6. State Machine
+
+### 6.1 State Machine - Book Copy Lifecycle
+```text
+Available
+  v
+Issued
+  |------ Returned
+  |------ Overdue
+  |------ Lost
+  |------ Damaged
+  v
+Archived
+```
+
+### 6.2 State Machine - Issue Lifecycle
+```text
+Active
+  |------ Overdue
+  |------ Returned
+  |------ Lost
+  v
+Closed
+```
+
+### 6.3 State Machine - Fine Lifecycle
+```text
+Pending
+  v
+Due
+  |------ Paid
+  |------ Waived
+  v
+Closed
+```
+
+***
+
+## 7. Required Data Entities
+
+### 7.1 Required Data Entities - books
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+schoolid | UUID
+title | VARCHAR
+author | VARCHAR NULL
+isbn | VARCHAR NULL
+category | VARCHAR NULL
+publisher | VARCHAR NULL
+status | ENUM
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.2 Required Data Entities - book_copies
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+bookid | UUID
+copycode | VARCHAR
+status | ENUM
+conditionnote | TEXT NULL
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.3 Required Data Entities - issues
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+bookcopyid | UUID
+studentid | UUID
+issuedat | TIMESTAMP
+duedate | DATE
+status | ENUM
+issuedby | UUID
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.4 Required Data Entities - returns
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+issueid | UUID
+returnedat | TIMESTAMP
+returncondition | ENUM
+remarks | TEXT NULL
+receivedby | UUID
+createdat | TIMESTAMP
+
+### 7.5 Required Data Entities - fines
+Field | Type
+--- | ---
+id | UUID
+tenantid | UUID
+issueid | UUID
+amount | DECIMAL
+reason | VARCHAR
+status | ENUM
+waivedby | UUID NULL
+paidat | TIMESTAMP NULL
+createdat | TIMESTAMP
+updatedat | TIMESTAMP
+
+### 7.6 Additional Supporting Entities
+- `library_policy_settings`
+- `library_audit_logs`
+- `copy_status_history`
+
+***
+
+## 8. Permissions Matrix
+
+| Capability | Super Admin | School Admin | Principal | Teacher | Accountant | Parent | Student |
+|---|---|---|---|---|---|---|---|
+| View library dashboard | Yes | Yes | Yes | Limited own view if enabled | Limited fine summary | No | No |
+| Create books | Limited Support | Yes | Yes if allowed | No | No | No | No |
+| Create book copies | Limited Support | Yes | Yes if allowed | No | No | No | No |
+| Issue books | No | Yes | Yes if allowed | No | No | No | No |
+| Record returns | No | Yes | Yes if allowed | No | No | No | No |
+| View student issue history | Limited Audit | Yes | Yes | No | Limited fine-linked view | Child only if enabled | Self only |
+| Manage fines | Limited Audit | Yes | Yes if allowed | No | Yes if integrated | No | No |
+| Waive fines | No | Yes | Yes if allowed | No | Yes if finance policy allows | No | No |
+| View audit history | Limited Audit | Yes | Limited | No | No | No | No |
+
+***
+
+## 9. APIs Needed
+
+### 9.1 APIs Needed - Book APIs
+- `POST /library/books`
+- `GET /library/books`
+- `GET /library/books/{id}`
+- `PATCH /library/books/{id}`
+
+### 9.2 APIs Needed - Book Copy APIs
+- `POST /library/book-copies`
+- `GET /library/book-copies`
+- `GET /library/book-copies/{id}`
+- `PATCH /library/book-copies/{id}`
+
+### 9.3 APIs Needed - Issue APIs
+- `POST /library/issues`
+- `GET /library/issues`
+- `GET /library/issues/{id}`
+- `POST /library/issues/{id}/mark-overdue`
+
+### 9.4 APIs Needed - Return APIs
+- `POST /library/returns`
+- `GET /library/returns`
+- `GET /library/returns/{id}`
+
+### 9.5 APIs Needed - Fine APIs
+- `POST /library/fines`
+- `GET /library/fines`
+- `GET /library/fines/{id}`
+- `POST /library/fines/{id}/waive`
+- `POST /library/fines/{id}/mark-paid`
+
+### 9.6 APIs Needed - Parent and Student View APIs
+- `GET /student/my-library`
+- `GET /parent/child/{studentId}/library`
+
+### 9.7 APIs Needed - Reporting APIs
+- `GET /library/reports/circulation`
+- `GET /library/reports/overdues`
+- `GET /library/reports/fines`
+- `GET /library/search`
+
+***
+
+## 10. Screens Needed
+
+### 10.1 Screens Needed - Library Dashboard
+Displays:
+- Total books
+- Available copies
+- Active issues
+- Overdue issues
+- Fine totals
+
+### 10.2 Screens Needed - Book Catalog Screen
+Features:
+- Create books
+- Search catalog
+- Edit metadata
+- View copy counts
+
+### 10.3 Screens Needed - Book Copy Management Screen
+Features:
+- Add copies
+- View copy availability
+- Update copy status
+- Track copy history
+
+### 10.4 Screens Needed - Issue and Return Screen
+Features:
+- Search student
+- Search book copy
+- Issue book
+- Record return
+- View due date and overdue status
+
+### 10.5 Screens Needed - Fine Management Screen
+Displays:
+- Fine amount
+- Due fine list
+- Paid and waived fines
+- Fine action history
+
+### 10.6 Screens Needed - Student Library View
+Displays:
+- Active issued books
+- Due dates
+- Overdue status
+- Fine status
+
+### 10.7 Screens Needed - Parent Library View
+Displays:
+- Linked child issued books
+- Due dates
+- Overdue visibility
+- Fine summary where enabled
+
+### 10.8 Screens Needed - Library Reports Screen
+Displays:
+- Circulation trends
+- Overdue list
+- Fine summary
+- Copy utilization
+
+***
+
+## 11. Edge Cases
+
+- **EC-001** Same book copy is issued twice concurrently. Operation blocked.
+- **EC-002** Student becomes inactive while holding issued book. Historical issue remains active until return or administrative resolution. 
+- **EC-003** Parent linked after issue date. Linked child library history becomes visible according to portal policy. 
+- **EC-004** Book copy is marked lost after issue. Issue status and fine workflow update without deleting history.
+- **EC-005** Return recorded with damaged condition. Copy becomes unavailable until reviewed.
+- **EC-006** Fine is waived after overdue state was generated. Original overdue and issue history remain unchanged.
+- **EC-007** Book metadata edited after historical issues exist. Historical issue records continue to reference the same copy identity.
+- **EC-008** Copy is archived while issue remains active. Archival blocked or deferred until issue closure.
+- **EC-009** Student tries to view another student’s issue history. Access denied.
+- **EC-010** Duplicate copy code entered. Save blocked.
+
+***
+
+## 12. Risks
+
+### 12.1 Risks - Inventory Integrity Risk
+Book copy availability becomes inaccurate.  
+Mitigation: Copy-level tracking, issue-return validation, status history.
+
+### 12.2 Risks - Operational Risk
+Issues and returns are recorded incorrectly or late.  
+Mitigation: Simple circulation screen, overdue reporting, searchable history.
+
+### 12.3 Risks - Privacy Risk
+Parents view unrelated child library records.  
+Mitigation: Relationship-based filtering, tenant-scoped access, portal restrictions. 
+
+### 12.4 Risks - Fine Integrity Risk
+Fine amounts become inconsistent with actual overdue state.  
+Mitigation: Configurable fine rules, audit logs, controlled waiver actions.
+
+### 12.5 Risks - Scalability Risk
+Large catalog search and circulation history become slow.  
+Mitigation: Indexed copy codes, searchable catalog, pagination, optimized overdue queries.
+
+### 12.6 Risks - Product Scope Risk
+Library complexity expands beyond MVP into full library-suite needs.  
+Mitigation: Keep MVP limited to catalog, copies, issues, returns, and fines.
+
+***
+
+## 13. Success Metrics
+
+### 13.1 Success Metrics - Product Metrics
+- Book creation success rate 99
+- Book issue success rate 98
+- Return recording success rate 98
+- Library dashboard load time 2 seconds
+- Catalog search response 2 seconds
+
+### 13.2 Success Metrics - Operational Metrics
+- Issue recording time under 30 seconds
+- Return recording time under 30 seconds
+- Overdue identification accuracy 100
+- Fine action turnaround under 1 minute
+
+### 13.3 Success Metrics - Parent and Student Transparency Metrics
+- Student library view usage above 60 where enabled
+- Parent linked-child library access accuracy 100
+- Overdue visibility for active issued books 100
+
+### 13.4 Success Metrics - Data Quality Metrics
+- Duplicate active issues for same copy 0
+- Invalid copy references in issue records 0
+- Fine records without linked issue 0
+
+### 13.5 Success Metrics - Business Metrics
+- Reduction in manual library circulation workload 60
+- Improved accountability for borrowed school property
+- Expanded product coverage for schools needing operational add-on modules
+
+### 14 Out of Scope
+The following are excluded from the Library module MVP:
+
+Full OPAC search portal
+
+Barcode or RFID hardware integrations
+
+Self-service kiosk workflows
+
+Staff borrowing workflows
+
+Vendor and procurement management
+
+Book acquisition planning
+
+Periodical and magazine management
+
+Digital e-book lending
+
+Multi-branch library network support
+
+Reservation and hold queue workflows
+
+Advanced catalog classification systems
+
+Reading recommendation engines
+
+AI-based book tagging or summaries
+
+External library database integrations
+
+Lost-book replacement procurement workflow
+
+Public library-style membership system
