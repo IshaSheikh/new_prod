@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Module Boundaries
 
 Defines the ownership, responsibilities, and dependency relationships between platform modules. Each module owns its data, enforces its own business rules, and exposes data to other modules only through well-defined interfaces.
@@ -141,3 +142,4 @@ KPI dashboards use materialized views or precomputed snapshots refreshed on a sc
 - Outstanding fee amount: refreshed hourly
 - Exam completion rate: refreshed on demand
 - Portal engagement: refreshed daily
+

@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # CI/CD
 
 Continuous integration and deployment pipeline for the platform.
@@ -320,3 +321,4 @@ If production deployment fails:
 | Bad migration (additive) | Fix and re-deploy |
 | Bad migration (destructive) | Emergency maintenance window + rollback migration |
 | Data corruption | Stop traffic, assess, restore from backup |
+

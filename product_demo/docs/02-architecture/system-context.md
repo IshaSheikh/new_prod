@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # System Context
 
 ## Overview
@@ -164,3 +165,4 @@ s3://platform-files/
 ```
 
 Presigned URLs with short expiry (15 minutes) are used for all file access. Files are never served directly from public URLs except for branding assets (logo/favicon) which are cached via CloudFront.
+

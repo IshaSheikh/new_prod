@@ -79,9 +79,9 @@ Responsibilities:
 * Manage users
 * Assign roles
 * Configure school settings
-* view & request subscriptions changes
+* View & request subscriptions changes
 
--### Principal
+### Principal
 
 Limited administrative access.
 
@@ -370,6 +370,9 @@ Data retained according to policy.
 
 ```text
 Invited
+   |
+   v
+Pending Acceptance
    |
    v
 Accepted

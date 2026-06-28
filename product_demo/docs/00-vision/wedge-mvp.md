@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Wedge MVP
 
 ## The Wedge Hypothesis
@@ -84,3 +85,4 @@ Week 19-21: M7.7 — Gradebook and Report Cards
 - **Mobile-first parent experience** — Flutter app must work on low-end Android devices
 - **Single deployment per region** — all tenants share infrastructure with strict logical isolation
 - **India-first** — INR currency, Indian phone number formats, Indian academic calendar defaults, IST timezone as default
+

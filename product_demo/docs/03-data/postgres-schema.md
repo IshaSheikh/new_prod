@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # PostgreSQL Schema
 
 Core production-ready schema definitions organized by module. All tables follow platform conventions: `tenant_id NOT NULL`, `created_at/updated_at`, `created_by/updated_by`, and RLS policies.
@@ -605,4 +606,5 @@ CREATE POLICY tenant_isolation ON students
 -- SET LOCAL app.tenant_id = 'tenant-uuid-here';
 ```
 
-> **Note:** The full schema for modules M7.5–M7.17 follows the same conventions established here. See `data7_1.md` through `data7_16.md` in the modules directory for complete DDL for each module.
+> **Note:** The full schema for modules M7.5–M7.17 follows the same conventions established here. See `data7_1.md` through `data7_16.md` in the `PRDs/` directory for complete DDL for each module.
+

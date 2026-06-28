@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Wireframes
 
 Screen inventory and wireframe descriptions for the platform. Wireframes are organized by module and user role.
@@ -360,3 +361,4 @@ Tabs:
 - Domain configuration
 - Staff members list
 - Recent audit events
+

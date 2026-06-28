@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # RLS Policies
 
 PostgreSQL Row-Level Security (RLS) policies for all tenant-owned tables. RLS is the second line of defense after application-layer tenant enforcement.
@@ -325,3 +326,4 @@ Before adding a new table to the schema, verify:
 - [ ] `CREATE POLICY ... USING (tenant_id = current_setting('app.tenant_id', true)::uuid)` created
 - [ ] `CREATE INDEX idx_{table}_tenant ON {table} (tenant_id)` created
 - [ ] If the table is audit/immutable: `REVOKE UPDATE, DELETE ON {table} FROM app_school_user`
+

@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Incident Runbook
 
 Procedures for responding to platform incidents. All severity levels require a post-incident review within 48 hours.
@@ -248,3 +249,4 @@ Complete within 48 hours of incident resolution:
 |--------|-------|----------|
 |        |       |          |
 ```
+

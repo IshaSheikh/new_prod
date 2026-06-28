@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # QA Checklists
 
 Quality assurance checklists for releases, feature deployments, and module launches.
@@ -81,6 +82,15 @@ Use this checklist when launching a new module or major feature.
 - [ ] Student status change always creates `student_status_history` row
 - [ ] Guardian linkage required before parent portal access
 - [ ] Documents are versioned (replace creates new version)
+
+### M7.5 — Academic Structure and Timetable
+
+- [ ] Subject group uniqueness enforced per tenant
+- [ ] Academic teacher assignments validated against conflicts
+- [ ] Room booking conflicts prevented
+- [ ] Timetable slots validated against period schemes
+- [ ] Timetable publication history maintained
+- [ ] Published timetables visible in portal
 
 ### M7.6 — Attendance
 
@@ -175,3 +185,4 @@ Before every production deployment, the following must sign off:
 
 For financial module changes, an additional sign-off is required:
 | Finance Operations | Verify billing calculations are correct on staging data |
+

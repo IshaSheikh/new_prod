@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Entity Relationship Diagram
 
 High-level ERD organized by domain module. Full DDL definitions are in `postgres-schema.md`.
@@ -335,3 +336,4 @@ kpi_definitions
 dashboard_exports ──── dashboard_definitions
 kpi_refresh_jobs ──── kpi_definitions
 ```
+

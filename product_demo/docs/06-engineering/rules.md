@@ -1,6 +1,7 @@
-# Cursor / AI Coding Rules
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
+# AI-Assisted Coding Rules
 
-Conventions and constraints for AI-assisted development on this codebase. These rules help maintain consistency when using Cursor, GitHub Copilot, or similar tools.
+Conventions and constraints for AI-assisted development on this codebase. These rules help maintain consistency when using  , GitHub Copilot, or similar tools.
 
 ---
 
@@ -220,3 +221,4 @@ CREATE INDEX CONCURRENTLY idx_new_table_column ON new_table (column_name);
 -- Never use DROP COLUMN in a migration (deprecate instead)
 -- Never hard delete from financial tables
 ```
+

@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Pilot Onboarding
 
 Guide for onboarding the first 10 pilot schools onto the platform. This document covers the process from initial contact through go-live and 30-day success review.
@@ -186,3 +187,4 @@ After 30 days, collect structured feedback via a short form:
 5. What would prevent you from converting to a paid subscription?
 
 Use this feedback to prioritize the product roadmap and identify high-value missing features before the general launch.
+

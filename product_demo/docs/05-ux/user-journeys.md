@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # User Journeys
 
 Critical user journeys across the platform, organized by persona. These journeys define the primary flows the product must support to deliver the core value proposition.
@@ -232,3 +233,4 @@ Critical user journeys across the platform, organized by persona. These journeys
 5. If attendance is locked: correction goes through approval workflow
 6. Correction approved → attendance record updated → audit trail preserved
 7. Parent sees corrected record on portal (no revision markers visible to parents)
+

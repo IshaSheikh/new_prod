@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # State Machines
 
 All significant lifecycle entities in the platform follow explicit state machines. Transitions are controlled — no direct database updates outside the transition rules below.
@@ -496,3 +497,4 @@ Requested
               ├─> Completed ──> Expired
               └─> Failed
 ```
+

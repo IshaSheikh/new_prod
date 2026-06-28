@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Customer Personas
 
 ## Platform Level
@@ -231,3 +232,4 @@
 - Fee collection efficiency (direct ROI)
 - Ease of setup (self-service = low implementation risk)
 - Price fit for Indian K-12 market
+

@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Product Thesis
 
 ## What We're Building
@@ -47,3 +48,4 @@ The business model scales because:
 ## Long-Term Vision
 
 Starting with K-12 schools in India and expanding to similar markets where school management is fragmented, paper-heavy, and underserved by existing software. The platform becomes the default operating system for a school — the system of record for students, staff, finances, and communication — making it deeply embedded in school operations and highly defensible.
+

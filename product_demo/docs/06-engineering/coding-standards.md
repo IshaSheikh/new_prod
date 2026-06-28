@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Coding Standards
 
 Engineering conventions for the platform codebase. These standards apply to all modules and must be consistent across the NestJS API, Next.js web app, and Flutter mobile app.
@@ -304,3 +305,4 @@ Before approving any PR, verify:
 - [ ] No secrets, passwords, or tokens in code or comments
 - [ ] Tests cover happy path and key failure scenarios
 - [ ] Migration is reversible (has `down()` method)
+

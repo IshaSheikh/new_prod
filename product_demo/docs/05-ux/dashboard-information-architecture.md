@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Dashboard Information Architecture
 
 Information architecture for dashboards and navigation across all user roles.
@@ -323,3 +324,4 @@ These are the widgets on the primary daily-use dashboard:
 - Back navigation always available (breadcrumb trail)
 - Quick actions accessible from list rows (hover/swipe menu)
 - Keyboard shortcuts for frequent actions (web app)
+

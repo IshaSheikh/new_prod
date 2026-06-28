@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Test Strategy
 
 Testing approach for the platform, covering all layers from unit tests to end-to-end tests.
@@ -250,3 +251,4 @@ stages:
 ```
 
 All stages must pass before a PR can be merged. E2E tests run post-deploy to staging before promoting to production.
+

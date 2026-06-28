@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Multi-Tenant Strategy
 
 ## Approach: Shared Database, Schema-Level Isolation with Row-Level Security
@@ -238,3 +239,4 @@ On cancellation or deletion of a tenant:
 5. S3 files are purged from the tenant's prefix
 
 Soft deletes (using `deleted_at`) are used for critical entities (students, branding assets, financial records) to maintain audit trails even within a tenant's lifetime.
+

@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Business Rules
 
 Authoritative business rules governing platform behavior across all modules. Rules are grouped by domain. These rules must be enforced at the application layer, database layer (constraints, triggers), and API layer (validation guards).
@@ -321,3 +322,4 @@ Authoritative business rules governing platform behavior across all modules. Rul
 **BR-HR-004** Changes to statutory and payroll-sensitive fields must be audited.
 
 **BR-HR-005** Payslips must not be visible to staff until payroll is finalized or published according to school policy.
+

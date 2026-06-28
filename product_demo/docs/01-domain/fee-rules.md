@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Fee Rules
 
 Detailed rules governing the Fees and Finance module (M7.8). These rules supplement the general business rules in `business-rules.md`.
@@ -223,3 +224,4 @@ Sum of `balance_due` across all `issued`, `partially_paid`, and `overdue` invoic
 
 **FR-041 — Defaulter definition**
 A student with at least one invoice in `overdue` status as of the reporting date.
+

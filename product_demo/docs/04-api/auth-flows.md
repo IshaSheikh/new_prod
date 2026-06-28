@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Auth Flows
 
 Authentication and authorization flows for the platform. All flows use JWT + Refresh Tokens as defined in ADR-002.
@@ -71,6 +72,7 @@ POST /auth/select-tenant { "tenantId": "riverside-uuid" }
   "membership_id": "membership-uuid",
   "session_id": "session-uuid",
   "roles": ["teacher"],
+  "permissions": ["attendance.mark"],
   "iat": 1234567890,
   "exp": 1234567890
 }
@@ -245,3 +247,4 @@ Each guard throws the appropriate HTTP exception on failure:
 - `401 Unauthorized` — missing or invalid token
 - `403 Forbidden` — valid token but insufficient permissions
 - `402 Payment Required` — subscription expired (with upgrade link)
+

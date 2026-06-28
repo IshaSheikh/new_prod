@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Glossary
 
 Definitions for core terms used across the platform, PRDs, API contracts, and database schema.
@@ -307,3 +308,4 @@ A unique client-generated token on payment operations to prevent duplicate proce
 
 **Snapshot**
 A point-in-time copy of calculated or template data stored in the record itself (e.g., invoice totals, result data in report cards). Snapshots prevent historical records from being affected by future configuration changes.
+

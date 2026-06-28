@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Seed Data
 
 Required seed data that must be present before any tenant can be onboarded or any school can operate. This data is inserted during initial platform setup and when a new tenant is provisioned.
@@ -300,3 +301,4 @@ VALUES
 (:tenant_id, 'CASTE_CERT', 'Caste Certificate', FALSE),
 (:tenant_id, 'INCOME_CERT', 'Income Certificate', FALSE);
 ```
+

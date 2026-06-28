@@ -1,3 +1,4 @@
+<!-- Source: PRDs | Last Verified: 2026-06-28 | Owner: Engineering -->
 # Error Contracts
 
 Standardized error response format used across all API endpoints.
@@ -216,3 +217,4 @@ For payment and financial operations that use idempotency keys:
 ```
 
 The client should use the `originalResponse` data instead of retrying.
+
